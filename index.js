@@ -16,7 +16,6 @@ app.get("/", (req, res) => {
 });
 
 // 2. جلب حالة طلب واحد (Single Status)
-// يدعم إعادة الرابط (Link) إذا كان الـ API الأصلي يوفره
 app.post("/status", async (req, res) => {
   try {
     const { order } = req.body;
@@ -29,9 +28,9 @@ app.post("/status", async (req, res) => {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({
-        key: process.env.prince_API_KEY, // تأكد من ضبط هذا في متغيرات البيئة
+        key: process.env.prince_API_KEY, 
         action: "status",
-        order: order
+        order: String(order)
       })
     });
 
@@ -39,13 +38,8 @@ app.post("/status", async (req, res) => {
 
     try {
       const data = JSON.parse(text);
-      
-      /* ملاحظة: الكود هنا يرسل كل البيانات كما هي. 
-         إذا أرسل Peakerr حقل 'link'، فسيصل لصفحة الـ PHP تلقائياً.
-      */
       res.json(data);
     } catch (e) {
-      // في حال كان الرد ليس JSON (خطأ من السيرفر الأصلي)
       res.status(500).json({ error: "فشل في معالجة بيانات السيرفر الأصلي", raw: text });
     }
   } catch (err) {
@@ -68,7 +62,7 @@ app.post("/orders", async (req, res) => {
       body: new URLSearchParams({
         key: process.env.prince_API_KEY,
         action: "status",
-        orders: orders // مصفوفة أرقام الطلبات مفصولة بفاصلة
+        orders: String(orders) // تحويلها لنص لضمان إرسالها مفصولة بفاصلة كـ String
       })
     });
 
@@ -100,7 +94,7 @@ app.post("/cancel", async (req, res) => {
       body: new URLSearchParams({
         key: process.env.prince_API_KEY,
         action: "cancel",
-        orders: orders
+        orders: String(orders)
       })
     });
 
@@ -117,7 +111,7 @@ app.post("/cancel", async (req, res) => {
   }
 });
 
-// إعداد المنفذ وتشغيل السيرفر
+// إعداد المنفذ وتشغيل السيرفر محلياً (لن يؤثر على Vercel)
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`
@@ -126,3 +120,6 @@ app.listen(PORT, () => {
   🔗 Action: Status, Orders, Cancel
   `);
 });
+
+// 🌟 السطر السحري والأساسي ليعمل الكود على Vercel بدون مشاكل 🌟
+export default app;
